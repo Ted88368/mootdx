@@ -1,26 +1,6 @@
 通达信数据读取接口
 ==================
 
-[![image](https://badge.fury.io/py/mootdx.svg)](http://badge.fury.io/py/mootdx)
-[![image](https://img.shields.io/travis/bopo/mootdx.svg)](https://travis-ci.org/mootdx/mootdx)
-[![Documentation Status](https://readthedocs.org/projects/mootdx/badge/?version=latest)](https://mootdx.readthedocs.io/zh/latest/?badge=latest)
-[![Updates](https://pyup.io/repos/github/mootdx/mootdx/shield.svg)](https://pyup.io/repos/github/mootdx/mootdx/)
-
-如果喜欢本项目可以在右上角给颗⭐！你的支持是我最大的动力😎！
-
-**郑重声明: 本项目只作学习交流, 不得用于任何商业目的.**
-
--   开源协议: MIT license
--   在线文档: <https://www.mootdx.com>
--   国内镜像: <https://gitee.com/ibopo/mootdx>
--   项目仓库: <https://github.com/mootdx/mootdx>
--   问题交流: <https://github.com/mootdx/mootdx/issues>
-
-版本更新(倒序)
---------------
-
-版本更新日志: <https://mootdx.readthedocs.io/zh_CN/latest/history/>
-
 运行环境
 --------
 
@@ -34,24 +14,33 @@
 
 ### PIP 安装方法
 ```shell
-
-# 包含核心依赖安装
-pip install 'mootdx'
-
-# 包含命令行依赖安装, 如果使用命令行工具可以使用这种方式安装
-pip install 'mootdx[cli]'
-
-# 包含所有扩展依赖安装, 如果不清楚各种依赖关系就用这个命令
-pip install 'mootdx[all]'
+pip install mootdx
 ```
 
 ### 升级安装
 
 ```shell
-pip install -U tdxpy mootdx
+pip install -U mootdx
 ```
 
-> 如果不清楚各种依赖关系就用这个命令 `pip install -U 'mootdx[all]'`
+### 开发环境安装
+
+推荐使用 `uv` 进行开发环境管理：
+
+```shell
+# 安装 uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 克隆代码
+git clone https://github.com/mootdx/mootdx.git
+cd mootdx
+
+# 同步依赖
+uv sync
+
+# 运行测试
+uv run pytest
+```
 
 使用说明
 --------
@@ -110,19 +99,8 @@ Affair.fetch(downdir='tmp', filename='gpcw19960630.zip')
 # 下载全部
 Affair.parse(downdir='tmp')
 ```
-
-加微信交流
-----------
-
-![](docs/img/IMG_2851.JPG)
-
-常见问题
 --------
 
 M1 mac 系统PyMiniRacer不能使用，访问:
 <https://github.com/sqreen/PyMiniRacer/issues/143>
 
-
-## Stargazers over time
-
-[![Stargazers over time](https://starchart.cc/mootdx/mootdx.svg)](https://starchart.cc/mootdx/mootdx)

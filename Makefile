@@ -24,7 +24,7 @@ endef
 export PRINT_HELP_PYSCRIPT
 
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
-VERSION := `poetry run python -m mootdx.version`
+VERSION := `uv run python -m mootdx.version`
 
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
@@ -61,19 +61,19 @@ lint:
 	flake8 --max-line-length=200
 
 cov: clean-test
-	poetry run py.test -v --cov=mootdx --cov-report=html
+	uv run py.test -v --cov=mootdx --cov-report=html
 
 fmt:
 	black -l 120 -t py36 -t py37 -t py38 -t py39 -t py310 .
 
 test: # run tests quickly with the default Python
-	@poetry run pytest tests
+	@uv run pytest tests
 
 test-all:
 	tox
 
 docs:
-	poetry run mkdocs serve -a 0.0.0.0:8000
+	uv run mkdocs serve -a 0.0.0.0:8000
 
 archive: clean
 	git archive --format zip --output ../mootdx-master.zip master
@@ -81,17 +81,17 @@ archive: clean
 #poetry run python setup.py sdist
 #poetry run python setup.py bdist_wheel
 package: clean ## 编译并打包
-	@poetry build -vv
+	@uv build -v
 	ls -lh dist
 
 cleanup: ## 清理开发环境
-	@poetry env remove `poetry env list | grep '(Activated)' | cut -d ' ' -f1 | sed 's/-py/ /g' | awk '{print $$NF}'`
+	@uv venv --clear
 
 prepare: clean ## 准备开发环境
 	git config user.email ibopo@126.com
 	git config pull.rebase false
 	git config user.name bopo
-	poetry install --sync
+	uv sync
 
 pull:
 	git pull origin `git symbolic-ref --short -q HEAD` --tags
@@ -107,7 +107,7 @@ hook:
 	curl -i -X POST https://readthedocs.org/api/v2/webhook/mootdx/247616/ -d '{"token": "3a3340e27ddf6996e37f83efc8942f9397108d48"}' -H "Content-Type: application/json"
 
 bestip:
-	@poetry run python -m mootdx bestip -v
+	@uv run python -m mootdx bestip -v
 
 # https://commitizen-tools.github.io/commitizen/
 # pip install commitizen -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -117,11 +117,11 @@ history: ## 显示增量修改日志
 #cz bump --dry-run --increment patch
 #cz bump --yes -ch -cc --increment patch --dry-run
 publish: clean ## 打包并发布
-	poetry publish --build --skip-existing --dry-run
+	uv publish --build --skip-existing --dry-run
 
 docker: # build docker image of CI/CD.
 	mkdir -p .temp
-	poetry export --without-hashes --with test -E all -o .temp/requirements.txt
+	uv export --no-hashes --with test -o .temp/requirements.txt
 	docker build . -t mootdx:build
 	docker-squash mootdx:build -t mootdx:squash
 
