@@ -25,5 +25,15 @@ client = Quotes.factory(market="std", quiet=True)  # 标准市场
 #
 # print(rd)
 if __name__ == '__main__':
-    df = client.get_k_data('600036', adjust='qfq')
-    print(df)
+    # 获取K线数据 (不复权)
+    df = client.bars(symbol='600036', frequency=9, start=0, offset=100)
+    print("不复权数据:")
+    print(df.tail())
+    
+    # 如果需要复权数据，可以使用 reversion 函数
+    # from mootdx.tools.reversion import reversion
+    # xdxr_data = client.xdxr(symbol='600036')
+    # df['code'] = '600036'
+    # qfq_df = reversion(df, xdxr_data, '01')  # '01' 表示前复权
+    # print("\n前复权数据:")
+    # print(qfq_df.head())
