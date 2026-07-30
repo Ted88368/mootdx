@@ -17,11 +17,11 @@ COPY ./tests/requirements.txt ./requirements.dev
 #  py3-pandas py3-numpy py3-click py3-schedule
 RUN pip wheel --wheel-dir /usr/src/app/wheels -r requirements.txt -r requirements.dev
 # RUN pip wheel --wheel-dir /usr/src/app/wheels -r requirements.dev -i https://mirrors.ustc.edu.cn/pypi/web/simple
-# RUN pip wheel --wheel-dir /usr/src/app/wheels -i https://mirrors.ustc.edu.cn/pypi/web/simple 'mootdx[all]'
+# RUN pip wheel --wheel-dir /usr/src/app/wheels -i https://mirrors.ustc.edu.cn/pypi/web/simple 'mootdx2[all]'
 RUN rm -rf /usr/src/app/wheels/setuptools*
 
-RUN pip install 'mootdx[cli]'
-RUN mootdx bestip -v
+RUN pip install 'mootdx2[cli]'
+RUN mootdx2 bestip -v
 
 # Python 'run' stage
 FROM python as python-run-stage
@@ -39,7 +39,7 @@ ENV BUILD_ENV ${BUILD_ENVIRONMENT}
 # All absolute dir copies ignore workdir instruction. All relative dir copies are wrt to the workdir instruction
 # copy python dependency wheels from python-build-stage
 COPY --from=python-build-stage /usr/src/app/wheels  /wheels/
-COPY --from=python-build-stage /root/.mootdx/config.json  /root/.mootdx/config.json
+COPY --from=python-build-stage /root/.mootdx2/config.json  /root/.mootdx2/config.json
 
 # use wheels to install python dependencies
 RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* && rm -rf /wheels/

@@ -24,7 +24,7 @@ endef
 export PRINT_HELP_PYSCRIPT
 
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
-VERSION := `uv run python -m mootdx.version`
+VERSION := `uv run python -m mootdx2.version`
 
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
@@ -61,7 +61,7 @@ lint:
 	flake8 --max-line-length=200
 
 cov: clean-test
-	uv run py.test -v --cov=mootdx --cov-report=html
+	uv run py.test -v --cov=mootdx2 --cov-report=html
 
 fmt:
 	black -l 120 -t py36 -t py37 -t py38 -t py39 -t py310 .
@@ -107,7 +107,7 @@ hook:
 	curl -i -X POST https://readthedocs.org/api/v2/webhook/mootdx/247616/ -d '{"token": "3a3340e27ddf6996e37f83efc8942f9397108d48"}' -H "Content-Type: application/json"
 
 bestip:
-	@uv run python -m mootdx bestip -v
+	@uv run python -m mootdx2 bestip -v
 
 # https://commitizen-tools.github.io/commitizen/
 # pip install commitizen -i https://pypi.tuna.tsinghua.edu.cn/simple

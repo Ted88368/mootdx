@@ -1,10 +1,10 @@
 import httpx
 import pandas as pd
 
-from mootdx.cache import file_cache
-from mootdx.logger import logger
-from mootdx.utils import get_config_path
-from mootdx.utils import get_stock_market
+from mootdx2.cache import file_cache
+from mootdx2.logger import logger
+from mootdx2.utils import get_config_path
+from mootdx2.utils import get_stock_market
 
 
 def fq_factor(symbol: str, method: str, ) -> pd.DataFrame:

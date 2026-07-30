@@ -1,4 +1,4 @@
-from mootdx.quotes import Quotes
+from mootdx2.quotes import Quotes
 
 client = Quotes.factory(market="std", quiet=True)  # 标准市场
 # client = Quotes.factory(market='ext', multithread=True, heartbeat=True) # 扩展市场
@@ -13,7 +13,7 @@ client = Quotes.factory(market="std", quiet=True)  # 标准市场
 # print(quote)
 
 # client = Quotes.factory(market='std')
-# from mootdx.logger import logger, logger
+# from mootdx2.logger import logger, logger
 #
 # # logger.remove()
 #
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     print(df.tail())
     
     # 如果需要复权数据，可以使用 reversion 函数
-    # from mootdx.tools.reversion import reversion
+    # from mootdx2.tools.reversion import reversion
     # xdxr_data = client.xdxr(symbol='600036')
     # df['code'] = '600036'
     # qfq_df = reversion(df, xdxr_data, '01')  # '01' 表示前复权

@@ -1,7 +1,7 @@
 import pytest
 
-from mootdx.quotes import Quotes
-from mootdx.utils import FREQUENCY
+from mootdx2.quotes import Quotes
+from mootdx2.utils import FREQUENCY
 
 
 @pytest.fixture(scope='function')

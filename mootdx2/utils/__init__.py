@@ -8,10 +8,10 @@ import pandas as pd
 from pandas import DataFrame
 from tqdm import tqdm
 
-from mootdx.consts import MARKET_BJ
-from mootdx.consts import MARKET_SH
-from mootdx.consts import MARKET_SZ
-from mootdx.logger import logger
+from mootdx2.consts import MARKET_BJ
+from mootdx2.consts import MARKET_SH
+from mootdx2.consts import MARKET_SZ
+from mootdx2.logger import logger
 
 
 def get_stock_markets(symbols=None):
@@ -165,7 +165,7 @@ def to_data(v, **kwargs):
         result['volume'] = result.vol
 
     if adjust and adjust in ['qfq', 'hfq'] and symbol:
-        from mootdx.utils.adjust import to_adjust
+        from mootdx2.utils.adjust import to_adjust
 
         result = to_adjust(result, symbol=symbol, adjust=adjust)
 
@@ -244,7 +244,7 @@ def get_config_path(config='config.json'):
     :param config: 配置文件名称
     :return: filename
     """
-    filename = Path.home() / '.mootdx' / config
+    filename = Path.home() / '.mootdx2' / config
     pathname = Path(filename).parent
 
     Path(pathname).exists() or Path(pathname).mkdir(parents=True)

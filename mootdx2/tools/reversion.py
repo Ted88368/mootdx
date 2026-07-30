@@ -2,7 +2,7 @@ import logging
 
 import pandas as pd
 
-from mootdx.utils.factor import fq_factor
+from mootdx2.utils.factor import fq_factor
 
 logger = logging.getLogger(__name__)
 

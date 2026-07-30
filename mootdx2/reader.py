@@ -5,9 +5,9 @@ from tdxpy.reader import TdxExHqDailyBarReader
 from tdxpy.reader import TdxLCMinBarReader
 from tdxpy.reader import TdxMinBarReader
 
-from mootdx.contrib.compat import MooTdxDailyBarReader
-from mootdx.utils import get_stock_market
-from mootdx.utils import to_data
+from mootdx2.contrib.compat import MooTdxDailyBarReader
+from mootdx2.utils import get_stock_market
+from mootdx2.utils import to_data
 
 
 class Reader(object):
@@ -139,7 +139,7 @@ class StdReader(ReaderBase):
         :param group:
         :return: pd.dataFrame or Bool
         """
-        from mootdx.tools.customize import Customize
+        from mootdx2.tools.customize import Customize
 
         reader = Customize(tdxdir=self.tdxdir)
 
@@ -156,8 +156,8 @@ class StdReader(ReaderBase):
         :param group:   分组解析
         :return: pd.dataFrame or None
         """
-        # from mootdx.block import BlockParse
-        from mootdx.parse import BaseParse
+        # from mootdx2.block import BlockParse
+        from mootdx2.parse import BaseParse
 
         return BaseParse(self.tdxdir).parse(symbol, group=group, **kwargs)
 

@@ -1,7 +1,7 @@
 import pandas as pd
 
-from mootdx.cache import lru_cache
-from mootdx.cache import timeit
+from mootdx2.cache import lru_cache
+from mootdx2.cache import timeit
 
 NUM_SAMPLES = 100
 

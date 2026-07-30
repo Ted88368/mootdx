@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from mootdx import get_config_path
-from mootdx.contrib.adjust import get_adjust_year
-from mootdx.utils.adjust import get_xdxr
+from mootdx2 import get_config_path
+from mootdx2.contrib.adjust import get_adjust_year
+from mootdx2.utils.adjust import get_xdxr
 
 
 @pytest.mark.skip(reason='暂时不做重复测试')

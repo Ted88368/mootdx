@@ -3,9 +3,9 @@ import hashlib
 from functools import partial
 from pathlib import Path
 
-from mootdx.financial import financial
-from mootdx.logger import logger
-from mootdx.utils import TqdmUpTo
+from mootdx2.financial import financial
+from mootdx2.logger import logger
+from mootdx2.utils import TqdmUpTo
 
 
 def download(downdir, filename):

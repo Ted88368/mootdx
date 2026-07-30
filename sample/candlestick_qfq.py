@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-使用 mootdx 获取前复权 K 线数据并绘制蜡烛图。
+使用 mootdx2 获取前复权 K 线数据并绘制蜡烛图。
 
 用法:
     python sample/candlestick_qfq.py 515880
@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 import mplfinance as mpf
 import pandas as pd
 
-from mootdx.quotes import Quotes
-from mootdx.tools.reversion import reversion
+from mootdx2.quotes import Quotes
+from mootdx2.tools.reversion import reversion
 
 # 设置中文字体，避免乱码
 plt.rcParams['font.sans-serif'] = [

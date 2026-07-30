@@ -1,6 +1,6 @@
 import unittest
 
-from mootdx.reader import ReaderBase
+from mootdx2.reader import ReaderBase
 
 
 # @pytest.mark.skip

@@ -1,6 +1,6 @@
 import pytest
 
-from mootdx.reader import Reader
+from mootdx2.reader import Reader
 from tests.conftest import is_empty
 
 

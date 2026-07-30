@@ -10,11 +10,11 @@ from tenacity import retry
 from tenacity import stop_after_attempt
 from tenacity import wait_fixed
 
-from mootdx import get_config_path
-from mootdx.cache import file_cache
-from mootdx.consts import return_last_value
-from mootdx.exceptions import MootdxModuleNotFoundError
-from mootdx.logger import logger
+from mootdx2 import get_config_path
+from mootdx2.cache import file_cache
+from mootdx2.consts import return_last_value
+from mootdx2.exceptions import MootdxModuleNotFoundError
+from mootdx2.logger import logger
 
 JS_DECODE = (Path(__file__).parent / 'holiday.js').read_text(encoding='utf-8')
 

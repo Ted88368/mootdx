@@ -3,10 +3,10 @@ from datetime import datetime
 
 import pytest
 
-from mootdx.consts import MARKET_SH
-from mootdx.exceptions import MootdxValidationException
-from mootdx.logger import logger
-from mootdx.quotes import Quotes
+from mootdx2.consts import MARKET_SH
+from mootdx2.exceptions import MootdxValidationException
+from mootdx2.logger import logger
+from mootdx2.quotes import Quotes
 
 
 class TestStdQuotes(unittest.TestCase):

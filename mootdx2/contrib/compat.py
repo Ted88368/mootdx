@@ -9,7 +9,7 @@ from tdxpy.exceptions import TdxConnectionError
 from tdxpy.heartbeat import HeartBeatThread
 from tdxpy.reader import TdxDailyBarReader
 
-from mootdx.logger import logger
+from mootdx2.logger import logger
 
 
 class MooTdxDailyBarReader(TdxDailyBarReader):

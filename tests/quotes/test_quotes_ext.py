@@ -2,8 +2,8 @@ import unittest
 
 import pytest
 
-from mootdx.consts import KLINE_DAILY
-from mootdx.quotes import Quotes
+from mootdx2.consts import KLINE_DAILY
+from mootdx2.quotes import Quotes
 
 
 @pytest.mark.skip(reason='暂时不做测试')

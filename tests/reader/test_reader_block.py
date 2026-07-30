@@ -1,6 +1,6 @@
 import pytest
 
-from mootdx.reader import Reader
+from mootdx2.reader import Reader
 
 tdxdir = 'tests/fixtures'
 
@@ -12,7 +12,7 @@ def reader():
 
 @pytest.fixture(scope='function')
 def parse():
-    from mootdx.parse import BaseParse
+    from mootdx2.parse import BaseParse
 
     return BaseParse(tdxdir=tdxdir)
 

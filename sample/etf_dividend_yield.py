@@ -9,7 +9,7 @@ ETF 股息率数据获取示例
 
 from datetime import datetime
 import pandas as pd
-from mootdx.quotes import Quotes
+from mootdx2.quotes import Quotes
 
 
 def get_etf_dividend_yield(symbol, years=1):

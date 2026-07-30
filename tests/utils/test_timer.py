@@ -1,7 +1,7 @@
 # import time
 # import unittest
 #
-# from mootdx.cache import timeit
+# from mootdx2.cache import timeit
 #
 #
 # @timeit

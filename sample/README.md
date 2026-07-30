@@ -1,6 +1,6 @@
 # Sample 示例目录
 
-本目录包含 mootdx 库的各种使用示例，帮助用户快速了解如何使用不同的功能模块。
+本目录包含 mootdx2 库的各种使用示例，帮助用户快速了解如何使用不同的功能模块。
 
 ## 数据下载示例
 
@@ -66,7 +66,7 @@
 ### 下载A股数据
 
 ```python
-from mootdx.quotes import Quotes
+from mootdx2.quotes import Quotes
 
 client = Quotes.factory(market="std", quiet=True)
 
@@ -75,7 +75,7 @@ df = client.bars(symbol='600036', frequency=9, start=0, offset=100)
 print(df.head())
 
 # 如果需要复权数据
-from mootdx.tools.reversion import reversion
+from mootdx2.tools.reversion import reversion
 xdxr_data = client.xdxr(symbol='600036')
 df['code'] = '600036'
 qfq_df = reversion(df, xdxr_data, '01')  # '01' 表示前复权, '02' 表示后复权
@@ -85,7 +85,7 @@ print(qfq_df.head())
 ### 下载港股数据
 
 ```python
-from mootdx.quotes import Quotes
+from mootdx2.quotes import Quotes
 
 client = Quotes.factory(market='ext')
 bars = client.bars(frequency=9, market=47, symbol='00700', start=0, offset=100)
@@ -95,7 +95,7 @@ print(bars)
 ### 下载财务数据
 
 ```python
-from mootdx.affair import Affair
+from mootdx2.affair import Affair
 
 # 下载所有财务数据
 Affair.fetch(downdir="tmp")
@@ -106,7 +106,7 @@ data = Affair.parse(downdir="tmp", filename="gpcw19960630.zip")
 
 ## 注意事项
 
-1. 运行示例前请确保已正确安装 mootdx 库
+1. 运行示例前请确保已正确安装 mootdx2 库
 2. 某些示例需要网络连接才能下载数据
 3. 下载的数据文件会保存在指定的目录中（如 tmp 目录）
 4. 建议先运行 `verify_server.py` 确认服务器连接正常

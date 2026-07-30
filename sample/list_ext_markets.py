@@ -1,4 +1,4 @@
-from mootdx.quotes import Quotes
+from mootdx2.quotes import Quotes
 
 client = Quotes.factory(market='ext')
 print(client.markets())

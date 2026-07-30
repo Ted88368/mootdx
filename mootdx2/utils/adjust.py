@@ -10,10 +10,10 @@ from tenacity import retry
 from tenacity import stop_after_attempt
 from tenacity import wait_fixed
 
-from mootdx import get_config_path
-from mootdx.cache import file_cache
-from mootdx.consts import return_last_value
-from mootdx.quotes import Quotes
+from mootdx2 import get_config_path
+from mootdx2.cache import file_cache
+from mootdx2.consts import return_last_value
+from mootdx2.quotes import Quotes
 
 
 @retry(wait=wait_fixed(2), retry_error_callback=return_last_value, stop=stop_after_attempt(5))
@@ -74,7 +74,7 @@ def get_xdxr(symbol):
 
 
 def to_adjust(temp_df, symbol=None, adjust=None):
-    from mootdx.tools.reversion import reversion
+    from mootdx2.tools.reversion import reversion
     return reversion(symbol, temp_df, get_xdxr(symbol), adjust)
 
 

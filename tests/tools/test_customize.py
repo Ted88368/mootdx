@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from mootdx.logger import logger
-from mootdx.tools.customize import Customize
+from mootdx2.logger import logger
+from mootdx2.tools.customize import Customize
 
 tdxdir = 'tests/fixtures'
 

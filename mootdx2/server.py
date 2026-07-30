@@ -9,12 +9,12 @@ from tdxpy.constants import hq_hosts
 from tdxpy.exhq import TdxExHq_API
 from tdxpy.hq import TdxHq_API
 
-from mootdx.consts import CONFIG
-from mootdx.consts import EX_HOSTS
-from mootdx.consts import GP_HOSTS
-from mootdx.consts import HQ_HOSTS
-from mootdx.logger import logger
-from mootdx.utils import get_config_path
+from mootdx2.consts import CONFIG
+from mootdx2.consts import EX_HOSTS
+from mootdx2.consts import GP_HOSTS
+from mootdx2.consts import HQ_HOSTS
+from mootdx2.logger import logger
+from mootdx2.utils import get_config_path
 
 hosts = {
     'HQ': [{'addr': hs[1], 'port': hs[2], 'time': 0, 'site': hs[0]} for hs in hq_hosts + HQ_HOSTS],
@@ -183,7 +183,7 @@ def bestip(console=False, limit=5, sync=False) -> None:
             if data:
                 default['BESTIP'][index] = data[0]
         except RuntimeError:
-            logger.error('请手动运行`python -m mootdx bestip`')
+            logger.error('请手动运行`python -m mootdx2 bestip`')
             break
 
     json.dump(default, open(config_, 'w', encoding='utf-8'), indent=2, ensure_ascii=False)

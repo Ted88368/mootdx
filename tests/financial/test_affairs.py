@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from mootdx.affair import Affair
-from mootdx.logger import logger
+from mootdx2.affair import Affair
+from mootdx2.logger import logger
 
 
 @pytest.mark.skip(reason='暂时不做重复测试')

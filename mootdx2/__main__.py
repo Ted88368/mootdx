@@ -3,18 +3,18 @@ import os
 import warnings
 from pathlib import Path
 
-from mootdx import __version__
-from mootdx.logger import logger
-from mootdx.utils import get_config_path
-from mootdx.utils import to_file
+from mootdx2 import __version__
+from mootdx2.logger import logger
+from mootdx2.utils import get_config_path
+from mootdx2.utils import to_file
 
 try:
     import click
     from prettytable import PrettyTable
 except (ImportError, ModuleNotFoundError):
     logging.basicConfig(level=logging.WARNING)
-    warnings.warn('!!! 缺少命令行依赖, 请使用次命令进行安装: pip install "mootdx[cli]"', DeprecationWarning)
-    logging.warning('!!! 缺少命令行依赖, 请使用次命令进行安装: pip install "mootdx[cli]"')
+    warnings.warn('!!! 缺少命令行依赖, 请使用次命令进行安装: pip install "mootdx2[cli]"', DeprecationWarning)
+    logging.warning('!!! 缺少命令行依赖, 请使用次命令进行安装: pip install "mootdx2[cli]"')
     exit(-1)
 
 
@@ -32,12 +32,12 @@ def entry():
 @click.option('-a', '--action', default='bars', help='操作类型 (daily: 日线, minute: 一分钟线, fzline: 五分钟线).', )
 @click.option('-m', '--market', default='std', help='证券市场, 默认 std (std: 标准股票市场, ext: 扩展市场).')
 def quotes(symbol, action, market, output):
-    from mootdx.quotes import Quotes
+    from mootdx2.quotes import Quotes
 
     client = Quotes.factory(market=market, multithread=True)
 
     try:
-        action = 'bars' if 'daily' else action
+        action = 'bars' if action == 'daily' else action
         if action == 'daily':
             frequency = 9
         elif action == 'minute':
@@ -62,7 +62,7 @@ def quotes(symbol, action, market, output):
 @click.option('-m', '--market', default='std', help='证券市场, 默认 std (std: 标准股票市场, ext: 扩展市场).')
 @click.option('-o', '--output', default=None, help='输出文件, 支持 CSV, HDF5, Excel 等格式.')
 def reader(symbol, action, market, tdxdir, output):
-    from mootdx.reader import Reader
+    from mootdx2.reader import Reader
 
     client = Reader.factory(market=market, tdxdir=tdxdir)
 
@@ -79,7 +79,7 @@ def reader(symbol, action, market, tdxdir, output):
 @click.option('-l', '--limit', default=5, help='显示最快前几个，默认 5.')
 @click.option('-v', '--verbose', count=True, help='详细模式')
 def server(limit, verbose):
-    from mootdx.server import bestip
+    from mootdx2.server import bestip
 
     if verbose:
         ch = logging.StreamHandler()
@@ -104,7 +104,7 @@ def server(limit, verbose):
 @click.option('-l', '--listfile', is_flag=True, default=False, help='显示全部文件')
 @click.option('-v', '--verbose', count=True, help='详细模式')
 def affair(parse, fetch, downdir, output, downall, verbose, listfile):
-    from mootdx.affair import Affair
+    from mootdx2.affair import Affair
 
     if verbose:
         ch = logging.StreamHandler()
@@ -164,7 +164,7 @@ def bundle(symbol, action, market, output, extension):
     批量下载行情数据
     :return:
     """
-    from mootdx.quotes import Quotes
+    from mootdx2.quotes import Quotes
 
     client = Quotes.factory(market=market, multithread=True)
     symbol = symbol.replace('，', ',').strip(',').split(',')

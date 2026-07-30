@@ -1,8 +1,8 @@
 import unittest
 
-from mootdx.quotes import Quotes
-from mootdx.tools.reversion import reversion
-from mootdx.utils.adjust import get_xdxr
+from mootdx2.quotes import Quotes
+from mootdx2.tools.reversion import reversion
+from mootdx2.utils.adjust import get_xdxr
 
 
 class TestReversion(unittest.TestCase):

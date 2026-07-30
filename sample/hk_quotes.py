@@ -1,4 +1,4 @@
-from mootdx.quotes import Quotes
+from mootdx2.quotes import Quotes
 
 # 扩展市场客户端 - 包括港股
 client = Quotes.factory(market='ext')

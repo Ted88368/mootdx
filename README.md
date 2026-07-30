@@ -10,17 +10,17 @@
 安装方法
 --------
 
-> 新手建议使用 `pip install -U 'mootdx[all]'` 安装
+> 新手建议使用 `pip install -U 'mootdx2[all]'` 安装
 
 ### PIP 安装方法
 ```shell
-pip install mootdx
+pip install mootdx2
 ```
 
 ### 升级安装
 
 ```shell
-pip install -U mootdx
+pip install -U mootdx2
 ```
 
 ### 开发环境安装
@@ -50,7 +50,7 @@ uv run pytest
 通达信离线数据读取
 
 ```python
-from mootdx.reader import Reader
+from mootdx2.reader import Reader
 
 # market 参数 std 为标准市场(就是股票), ext 为扩展市场(期货，黄金等)
 # tdxdir 是通达信的数据目录, 根据自己的情况修改
@@ -70,7 +70,7 @@ reader.fzline(symbol='600036')
 通达信线上行情读取
 
 ```python
-from mootdx.quotes import Quotes
+from mootdx2.quotes import Quotes
 
 # 标准市场
 client = Quotes.factory(market='std', multithread=True, heartbeat=True)
@@ -88,7 +88,7 @@ client.minute(symbol='000001')
 通达信财务数据读取
 
 ```python
-from mootdx.affair import Affair
+from mootdx2.affair import Affair
 
 # 远程文件列表
 files = Affair.files()

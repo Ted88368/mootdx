@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from mootdx.cache import timeit
+from mootdx2.cache import timeit
 
 
 def file_expired(file_path, expire_seconds=3600):

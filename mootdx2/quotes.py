@@ -13,17 +13,17 @@ from tenacity import stop_after_attempt
 from tenacity import wait_random
 from tqdm import tqdm
 
-from mootdx import config
-from mootdx.consts import MARKET_SH
-from mootdx.consts import MARKET_SZ
-from mootdx.consts import return_last_value
-from mootdx.exceptions import MootdxValidationException
-from mootdx.logger import logger
-from mootdx.server import check_server
-from mootdx.utils import get_frequency
-from mootdx.utils import get_stock_market
-from mootdx.utils import get_stock_markets
-from mootdx.utils import to_data
+from mootdx2 import config
+from mootdx2.consts import MARKET_SH
+from mootdx2.consts import MARKET_SZ
+from mootdx2.consts import return_last_value
+from mootdx2.exceptions import MootdxValidationException
+from mootdx2.logger import logger
+from mootdx2.server import check_server
+from mootdx2.utils import get_frequency
+from mootdx2.utils import get_stock_market
+from mootdx2.utils import get_stock_markets
+from mootdx2.utils import to_data
 
 
 class Quotes(object):

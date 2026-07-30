@@ -34,14 +34,14 @@ Homepage = "https://www.mootdx.com"
 Repository = "https://github.com/mootdx/mootdx"
 
 [project.scripts]
-mootdx2 = "mootdx.__main__:entry"
+mootdx2 = "mootdx2.__main__:entry"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["mootdx"]
+packages = ["mootdx2"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -66,5 +66,5 @@ changelog_incremental = true
 update_changelog_on_bump = true
 version_provider = "pep621"
 version_files = [
-    "mootdx/__init__.py:__version__",
+    "mootdx2/__init__.py:__version__",
 ]

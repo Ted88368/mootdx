@@ -2,12 +2,12 @@ import copy
 import json
 from pathlib import Path
 
-from mootdx.consts import EX_HOSTS
-from mootdx.consts import GP_HOSTS
-from mootdx.consts import HQ_HOSTS
-from mootdx.logger import logger
-from mootdx.server import bestip
-from mootdx.utils import get_config_path
+from mootdx2.consts import EX_HOSTS
+from mootdx2.consts import GP_HOSTS
+from mootdx2.consts import HQ_HOSTS
+from mootdx2.logger import logger
+from mootdx2.server import bestip
+from mootdx2.utils import get_config_path
 
 __all__ = ['set', 'get', 'copy', 'update', 'settings']
 

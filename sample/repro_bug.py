@@ -1,4 +1,4 @@
-from mootdx.quotes import Quotes
+from mootdx2.quotes import Quotes
 
 def test_588000_price():
     q = Quotes()

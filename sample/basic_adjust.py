@@ -1,5 +1,5 @@
-from mootdx.tools.reversion import reversion
-from mootdx.quotes import Quotes
+from mootdx2.tools.reversion import reversion
+from mootdx2.quotes import Quotes
 
 client = Quotes.factory(market="std")
 bfq_data = client.bars(symbol="600036")

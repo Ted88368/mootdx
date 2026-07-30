@@ -1,6 +1,6 @@
 import pytest
 
-from mootdx.reader import StdReader
+from mootdx2.reader import StdReader
 from tests.conftest import is_empty
 
 tdxdir = 'tests/fixtures'
