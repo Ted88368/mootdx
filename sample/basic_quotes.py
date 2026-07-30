@@ -26,7 +26,7 @@ client = Quotes.factory(market="std", quiet=True)  # 标准市场
 # print(rd)
 if __name__ == '__main__':
     # 获取K线数据 (不复权)
-    df = client.bars(symbol='600036', frequency=9, start=0, offset=100)
+    df = client.bars(symbol='159217', frequency=9, start=0, offset=1000)
     print("不复权数据:")
     print(df.tail())
     

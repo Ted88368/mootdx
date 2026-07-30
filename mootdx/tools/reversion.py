@@ -99,18 +99,43 @@ def etf_reversion(data, xdxr, adjust='01'):
     data = pd.concat([data, xdxr.loc[data.index[0]: data.index[-1], ['suogu', 'category']]], axis=1)
 
     if adjust.lower() in ['01', 'qfq']:
-        # 前复权向前移动一天
-        # 向前传播
-        data['suogu'] = data['suogu'].bfill()
-        data['suogu'] = data['suogu'].fillna(1)
-        data['suogu'] = data['suogu'].shift(-1)
+        # 获取 suogu 事件日期的原始值（仅在除权日有非空值）
+        suogu_raw = data['suogu'].dropna().sort_index()
+
+        if len(suogu_raw) > 0:
+            # 从后往前累积乘积：前复权 = 历史价格除以累积因子
+            cum_suogu = suogu_raw[::-1].cumprod()[::-1]
+
+            # 将累积因子赋值回原始数据的事件日期
+            data['suogu'] = pd.Series(index=data.index, dtype=float)
+            data.loc[cum_suogu.index, 'suogu'] = cum_suogu.values
+
+            # 向后填充（前复权：向前传播累积因子）
+            data['suogu'] = data['suogu'].bfill()
+            data['suogu'] = data['suogu'].fillna(1)
+
+            # 前移一天：除权日当天价格已是除权后的，不参与调整
+            data['suogu'] = data['suogu'].shift(-1)
+            data['suogu'] = data['suogu'].fillna(1)
 
         for col in ['open', 'high', 'low', 'close']:
             data[col] = data[col] / data['suogu']
 
     if adjust.lower() in ['02', 'hfq']:
-        data['suogu'] = data['suogu'].ffill()
-        data['suogu'] = data['suogu'].fillna(1)
+        # 获取 suogu 事件日期的原始值（仅在除权日有非空值）
+        suogu_raw = data['suogu'].dropna().sort_index()
+
+        if len(suogu_raw) > 0:
+            # 从前往后累积乘积：后复权 = 未来价格乘以累积因子
+            cum_suogu = suogu_raw.cumprod()
+
+            # 将累积因子赋值回原始数据的事件日期
+            data['suogu'] = pd.Series(index=data.index, dtype=float)
+            data.loc[cum_suogu.index, 'suogu'] = cum_suogu.values
+
+            # 向前填充（后复权：向后传播累积因子）
+            data['suogu'] = data['suogu'].ffill()
+            data['suogu'] = data['suogu'].fillna(1)
 
         for col in ['open', 'high', 'low', 'close']:
             data[col] = data[col] * data['suogu']
