@@ -1,6 +1,6 @@
 [project]
 name = "mootdx2"
-version = "1.0.1"
+version = "1.0.2"
 description = "通达信数据读取接口."
 readme = "README.md"
 requires-python = ">=3.8"
