@@ -16,17 +16,25 @@ def fq_factor(symbol: str, method: str, ) -> pd.DataFrame:
     @file_cache(filepath=cache_file, refresh_time=3600 * 24)
     def _factor(symbol: str, method: str, ) -> pd.DataFrame:
 
+        import json
+
         try:
             url = 'https://finance.sina.com.cn/realstock/company/{}/{}.js'
             rsp = httpx.get(url.format(symbol, method))
-            res = pd.DataFrame(eval(rsp.text.split('=')[1].split('\n')[0])['data'])
+            rsp_data = json.loads(rsp.text.split('=')[1].split('\n')[0])
         except (SyntaxError, httpx.ConnectError) as ex:
             logger.error(ex)
             return pd.DataFrame(None)
 
-        if res.shape[0] == 0:
+        records = rsp_data.get('data', [])
+        if len(records) == 0:
             raise ValueError(f'sina {method} factor not available')
 
+        # ETFs return 4 fields ['d','f','s','u'], stocks return ['d','f']
+        # For ETFs, 's' is the actual factor value; 'f' is just a flag
+        factor_key = 's' if 's' in records[0] else 'f'
+
+        res = pd.DataFrame(records)[['d', factor_key]]
         res.columns = ['date', 'factor']
         res.date = pd.to_datetime(res.date)
 
