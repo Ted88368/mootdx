@@ -68,6 +68,11 @@ def fetch_qfq_data(symbol: str, offset: int = 800) -> pd.DataFrame:
     else:
         result = qfq[['open', 'high', 'low', 'close', 'volume']]
 
+    # 确保数值列为 float 类型
+    for col in ['open', 'high', 'low', 'close', 'volume']:
+        if col in result.columns:
+            result[col] = pd.to_numeric(result[col], errors='coerce')
+
     return result
 
 

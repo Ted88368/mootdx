@@ -28,6 +28,9 @@ def factor_reversion(symbol: str, method: str = 'qfq', raw: pd.DataFrame = None)
 
 
 def _reversion(bfq_data, xdxr_data, type_):
+    if len(bfq_data) <= 0:
+        return bfq_data
+
     if len(xdxr_data) <= 0:
         return bfq_data
 
@@ -85,6 +88,9 @@ def _reversion(bfq_data, xdxr_data, type_):
 
 
 def etf_reversion(data, xdxr, adjust='01'):
+    if len(data) <= 0:
+        return data
+
     if len(xdxr) <= 0:
         return data
 
@@ -93,7 +99,15 @@ def etf_reversion(data, xdxr, adjust='01'):
     if len(xdxr) <= 0:
         return data
 
-    data['date'] = pd.to_datetime(data[['year', 'month', 'day']], utc=False)
+    # Build date column from available date-related fields
+    if 'year' in data.columns and 'month' in data.columns and 'day' in data.columns:
+        data['date'] = pd.to_datetime(data[['year', 'month', 'day']], utc=False)
+    elif 'datetime' in data.columns:
+        data['date'] = pd.to_datetime(data['datetime'], utc=False)
+    elif isinstance(data.index, pd.DatetimeIndex):
+        data['date'] = data.index
+    else:
+        data['date'] = pd.to_datetime(data.index, utc=False)
 
     data = data.set_index(['date'])
     data = pd.concat([data, xdxr.loc[data.index[0]: data.index[-1], ['suogu', 'category']]], axis=1)
@@ -141,7 +155,11 @@ def etf_reversion(data, xdxr, adjust='01'):
             data[col] = data[col] * data['suogu']
 
     data = data.drop(['suogu', 'category'], axis=1, errors='ignore')
-    data = data.set_index(['datetime'])
+    # Restore index: prefer 'datetime' column if it exists, otherwise keep 'date' index
+    if 'datetime' in data.columns:
+        data = data.set_index(['datetime'])
+    else:
+        data.index.name = 'datetime'
 
     return data
 
@@ -203,8 +221,18 @@ def reversion(symbol, stock_data, xdxr, type_='01'):
     if symbol[:2] in ['15', '16', '50', '51']:
         stock_data = etf_reversion(data=stock_data, xdxr=_fetch_xdxr(xdxr), adjust=type_)
 
-    return factor_reversion(symbol=symbol, raw=stock_data, method=type_)
-    # return _reversion(bfq_data=stock_data, xdxr_data=_fetch_xdxr(xdxr), type_=type_)
+    # Primary: XDXR-based local computation using TDX除权除息 data
+    try:
+        return _reversion(bfq_data=stock_data, xdxr_data=_fetch_xdxr(xdxr), type_=type_)
+    except Exception as ex:
+        logger.warning(f'XDXR reversion failed for %s, falling back to Sina factor: %s', symbol, ex)
+
+        # Fallback: Sina finance precomputed factor
+        try:
+            return factor_reversion(symbol=symbol, raw=stock_data, method=type_)
+        except Exception as ex2:
+            logger.error(f'Sina factor reversion also failed for %s: %s', symbol, ex2)
+            return stock_data
 
 
 # 算法一样
