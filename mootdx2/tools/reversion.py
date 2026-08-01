@@ -132,8 +132,8 @@ def etf_reversion(data, xdxr, adjust='01'):
             data['suogu'] = data['suogu'].shift(-1)
             data['suogu'] = data['suogu'].fillna(1)
 
-        for col in ['open', 'high', 'low', 'close']:
-            data[col] = data[col] / data['suogu']
+            for col in ['open', 'high', 'low', 'close']:
+                data[col] = data[col] / data['suogu']
 
     if adjust.lower() in ['02', 'hfq']:
         # 获取 suogu 事件日期的原始值（仅在除权日有非空值）
@@ -151,8 +151,8 @@ def etf_reversion(data, xdxr, adjust='01'):
             data['suogu'] = data['suogu'].ffill()
             data['suogu'] = data['suogu'].fillna(1)
 
-        for col in ['open', 'high', 'low', 'close']:
-            data[col] = data[col] * data['suogu']
+            for col in ['open', 'high', 'low', 'close']:
+                data[col] = data[col] * data['suogu']
 
     data = data.drop(['suogu', 'category'], axis=1, errors='ignore')
     # Restore index: prefer 'datetime' column if it exists, otherwise keep 'date' index

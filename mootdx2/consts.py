@@ -11,7 +11,7 @@ def _default_tdxdir():
     if sys.platform == 'win32':
         return 'C:/new_tdx'
     if sys.platform == 'darwin':
-        return str(Path.home() / 'Library' / 'Application Support' / 'new_tdx')
+        return str(Path.home() / 'new_tdx')
     return str(Path.home() / '.local' / 'share' / 'new_tdx')
 
 
