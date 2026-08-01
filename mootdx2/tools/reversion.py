@@ -165,7 +165,7 @@ def etf_reversion(data, xdxr, adjust='01'):
 
 
 def reversion(symbol, stock_data, xdxr, type_='01'):
-    def _fetch_xdxr(collections=None):
+    def _fetch_xdxr(collections=None) -> pd.DataFrame:
         """获取股票除权信息数据"""
         columns = [
             'category',
@@ -187,6 +187,9 @@ def reversion(symbol, stock_data, xdxr, type_='01'):
 
         try:
             data = collections
+
+            if data is None:
+                return pd.DataFrame(data=[], columns=columns)
 
             if len(data) <= 0:
                 return data
@@ -218,21 +221,29 @@ def reversion(symbol, stock_data, xdxr, type_='01'):
     #     else stock_data["code"][0]
     # )
 
+    xdxr = _fetch_xdxr(xdxr)
+    if len(xdxr) <= 0:
+        return stock_data
+
+    # 基金类代码 (15/16/50/51 前缀: ETF/LOF/封基) 走 etf_reversion (category==11)，
+    # 跳过 _reversion 的二次处理，避免对已复权数据再复权
     if symbol[:2] in ['15', '16', '50', '51']:
-        stock_data = etf_reversion(data=stock_data, xdxr=_fetch_xdxr(xdxr), adjust=type_)
-
-    # Primary: XDXR-based local computation using TDX除权除息 data
-    try:
-        return _reversion(bfq_data=stock_data, xdxr_data=_fetch_xdxr(xdxr), type_=type_)
-    except Exception as ex:
-        logger.warning(f'XDXR reversion failed for %s, falling back to Sina factor: %s', symbol, ex)
-
-        # Fallback: Sina finance precomputed factor
         try:
-            return factor_reversion(symbol=symbol, raw=stock_data, method=type_)
-        except Exception as ex2:
-            logger.error(f'Sina factor reversion also failed for %s: %s', symbol, ex2)
-            return stock_data
+            return etf_reversion(data=stock_data, xdxr=xdxr, adjust=type_)
+        except Exception as ex:
+            logger.warning(f'ETF reversion failed for %s, falling back to Sina factor: %s', symbol, ex)
+    else:
+        try:
+            return _reversion(bfq_data=stock_data, xdxr_data=xdxr, type_=type_)
+        except Exception as ex:
+            logger.warning(f'XDXR reversion failed for %s, falling back to Sina factor: %s', symbol, ex)
+
+    # Fallback: Sina finance precomputed factor
+    try:
+        return factor_reversion(symbol=symbol, raw=stock_data, method=type_)
+    except Exception as ex2:
+        logger.error(f'Sina factor reversion also failed for %s: %s', symbol, ex2)
+        return stock_data
 
 
 # 算法一样
