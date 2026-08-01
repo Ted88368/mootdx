@@ -43,7 +43,7 @@ def fetch_qfq_offline(reader: Reader, symbol: str) -> pd.DataFrame:
     Returns:
         前复权 OHLCV DataFrame, 索引为日期; 无数据时返回 None
     """
-    raw = reader.daily(symbol=symbol)
+    raw = reader.daily(symbol=symbol, auto_download=True)
     if raw is None or raw.empty:
         return None
 

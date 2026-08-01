@@ -3,7 +3,7 @@
 使用 mootdx2 获取前复权 K 线数据并绘制蜡烛图。
 
 用法:
-    python sample/candlestick_qfq.py 515880
+    uv run  sample/candlestick_qfq.py 515880
     python sample/candlestick_qfq.py 515880 -n 120   # 绘制最近 120 根 K 线
     python sample/candlestick_qfq.py 600036 -n 90     # 也支持普通股票
 

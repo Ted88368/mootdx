@@ -1,10 +1,13 @@
+import time
 from abc import ABC
 from pathlib import Path
 
+import pandas as pd
 from tdxpy.reader import TdxExHqDailyBarReader
 from tdxpy.reader import TdxLCMinBarReader
 from tdxpy.reader import TdxMinBarReader
 
+from mootdx2 import get_config_path
 from mootdx2.consts import DEFAULT_TDXDIR
 from mootdx2.contrib.compat import MooTdxDailyBarReader
 from mootdx2.utils import get_stock_market
@@ -92,18 +95,63 @@ class ReaderBase(ABC):
 class StdReader(ReaderBase):
     """股票市场"""
 
-    def daily(self, symbol=None, **kwargs):
+    def daily(self, symbol=None, auto_download=False, **kwargs):
         """
         获取日线数据
 
+        优先从本地通达信数据目录读取，若文件不存在且 ``auto_download=True``，
+        则在线回退：首次联网拉取全部历史日线并缓存到 ``~/.mootdx2/caches/daily/`` (24h TTL)，
+        后续读取命中缓存即为纯离线。
+
         :param symbol: 证券代码
+        :param auto_download: 本地文件缺失时是否自动联网下载 (默认 False)
         :return: pd.dataFrame or None
         """
         symbol = Path(symbol).stem
         reader = MooTdxDailyBarReader()
         vipdoc = self.find_path(symbol=symbol, subdir='lday', suffix='day')
 
-        result = reader.get_df(str(vipdoc)) if vipdoc else None
+        if vipdoc:
+            result = reader.get_df(str(vipdoc))
+            return to_data(result, symbol=symbol, **kwargs)
+
+        if not auto_download:
+            return to_data(None, symbol=symbol, **kwargs)
+
+        cache_file = get_config_path(f'caches/daily/{symbol}.plk')
+
+        try:
+            if Path(cache_file).exists() and time.time() - Path(cache_file).stat().st_mtime < 86400:
+                return to_data(pd.read_pickle(cache_file), symbol=symbol, **kwargs)
+        except (FileNotFoundError, EOFError):
+            pass
+
+        from mootdx2.quotes import Quotes
+
+        try:
+            client = Quotes.factory('std')
+        except Exception:
+            return to_data(None, symbol=symbol, **kwargs)
+
+        all_data = []
+        for start in range(0, 100000, 800):
+            try:
+                chunk = client.bars(symbol=symbol, frequency=9, start=start, offset=800)
+            except Exception:
+                break
+            if chunk is None or chunk.empty:
+                break
+            all_data.append(chunk)
+            if len(chunk) < 800:
+                break
+
+        if not all_data:
+            return to_data(None, symbol=symbol, **kwargs)
+
+        result = pd.concat(all_data, ignore_index=True)
+        Path(cache_file).parent.mkdir(parents=True, exist_ok=True)
+        result.to_pickle(cache_file)
+
         return to_data(result, symbol=symbol, **kwargs)
 
     def minute(self, symbol=None, suffix=1, **kwargs):  # noqa
