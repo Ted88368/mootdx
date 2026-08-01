@@ -2,6 +2,7 @@ import asyncio
 import functools
 import json
 import socket
+import threading
 import time
 from functools import partial
 
@@ -167,6 +168,88 @@ def server(index=None, limit=5, console=False, sync=True):
 
 def check_server(console=False, limit=5, sync=False) -> None:
     return bestip(console=console, limit=limit, sync=sync)
+
+
+class ServerManager:
+    """
+    多服务器候选池管理器.
+
+    维护测速/配置排序后的 (addr, port) 候选列表, 记录当前服务器的连续失败次数,
+    达到阈值后自动推进游标切换到下一台服务器. 线程安全.
+
+    :param index: 市场类型, 'HQ' 标准市场, 'EX' 扩展市场
+    :param candidates: 显式候选列表, 默认按 BESTIP 优先、配置 SERVER 顺序生成
+    :param threshold: 连续失败多少次后切换服务器, 默认 3
+    """
+
+    def __init__(self, index='HQ', candidates=None, threshold=3):
+        self.index = index
+        self.threshold = max(1, int(threshold))
+        self.lock = threading.RLock()
+        self._candidates = candidates or self._default_candidates(index)
+        self._cursor = 0
+        self._failures = 0
+        self.current = self._candidates[0] if self._candidates else None
+
+    @staticmethod
+    def _default_candidates(index):
+        from mootdx2 import config
+
+        ordered = []
+
+        bestip = (config.get('BESTIP') or {}).get(index)
+        if bestip:
+            ordered.append(tuple(bestip))
+
+        for item in (config.get('SERVER') or {}).get(index) or []:
+            cand = (item[1], int(item[2]))
+            if cand not in ordered:
+                ordered.append(cand)
+
+        return ordered
+
+    @property
+    def candidates(self):
+        return list(self._candidates)
+
+    def current_server(self):
+        if not self._candidates:
+            return None
+
+        return self._candidates[self._cursor % len(self._candidates)]
+
+    def mark_connected(self, addr, port):
+        with self.lock:
+            target = (addr, int(port))
+
+            try:
+                self._cursor = self._candidates.index(target)
+            except ValueError:
+                pass
+
+            self.current = target
+
+    def report_success(self):
+        with self.lock:
+            self._failures = 0
+
+    def report_failure(self):
+        """
+        记录一次失败. 连续失败达到阈值时切换到下一台服务器并返回 True;
+        未达阈值返回 False.
+        """
+        with self.lock:
+            self._failures += 1
+
+            if self._failures < self.threshold:
+                return False
+
+            self._failures = 0
+            self._cursor += 1
+            self.current = self.current_server()
+
+            logger.warning(f'服务器连续失败 {self.threshold} 次, 切换到 {self.current}')
+            return True
 
 
 def bestip(console=False, limit=5, sync=False) -> None:

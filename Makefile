@@ -117,7 +117,7 @@ history: ## 显示增量修改日志
 #cz bump --dry-run --increment patch
 #cz bump --yes -ch -cc --increment patch --dry-run
 publish: package ## 打包并发布
-	uv publish
+	uv publish --token $$TOKEN
 
 docker: # build docker image of CI/CD.
 	mkdir -p .temp

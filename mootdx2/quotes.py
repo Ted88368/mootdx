@@ -1,3 +1,4 @@
+import functools
 import math
 from datetime import datetime
 
@@ -19,6 +20,7 @@ from mootdx2.consts import MARKET_SZ
 from mootdx2.consts import return_last_value
 from mootdx2.exceptions import MootdxValidationException
 from mootdx2.logger import logger
+from mootdx2.server import ServerManager
 from mootdx2.server import check_server
 from mootdx2.utils import get_frequency
 from mootdx2.utils import get_stock_market
@@ -59,9 +61,72 @@ def valid_server(server):
     return None
 
 
+class AutoSwitchClient:
+    """
+    请求级自动切换代理: 包装 tdxpy API 客户端, 捕获请求失败 (异常或 None 结果),
+    交由 ServerManager 计数, 达到阈值后自动重连到下一台服务器并重试请求.
+    """
+
+    _PASSTHROUGH = {'connect', 'disconnect', 'close', 'setup', 'to_df', 'get_traffic_stats'}
+
+    def __init__(self, api, manager, timeout=15):
+        self._api = api
+        self._manager = manager
+        self._timeout = timeout
+        self._last_error = None
+
+    def __getattr__(self, name):
+        attr = getattr(self._api, name)
+
+        if not callable(attr) or name in self._PASSTHROUGH:
+            return attr
+
+        return functools.partial(self._call, name)
+
+    def _call(self, name, *args, **kwargs):
+        manager = self._manager
+        max_attempts = max(len(manager.candidates), 1)
+        result = None
+
+        for _ in range(max_attempts):
+            try:
+                result = getattr(self._api, name)(*args, **kwargs)
+            except Exception as exc:  # noqa
+                self._last_error = exc
+                logger.warning(f'请求 {name} 异常: {exc}')
+                result = None
+
+            if result is not None:
+                manager.report_success()
+                return result
+
+            if not manager.report_failure():
+                return result
+
+            self._reconnect()
+            logger.warning(f'请求 {name} 已切换服务器, 重试中...')
+
+        return result
+
+    def _reconnect(self):
+        target = self._manager.current_server()
+
+        if not target:
+            return
+
+        addr, port = target
+
+        try:
+            self._api.disconnect()
+            self._api.connect(addr, int(port), time_out=self._timeout)
+        except Exception as exc:  # noqa
+            logger.warning(f'切换到服务器 {target} 失败: {exc}')
+
+
 class BaseQuotes(object):
     client = None
     bestip = None
+    manager = None
     server = None
 
     verbose = False
@@ -87,10 +152,34 @@ class BaseQuotes(object):
         logger.debug('call __del__')
         self.close()
 
+    def _connect(self):
+        manager = self.manager
+
+        if not manager:
+            logger.error('没有可用的服务器候选.')
+            return False
+
+        for addr, port in manager.candidates:
+            try:
+                if self.client.connect(addr, int(port), time_out=self.timeout):
+                    self.server = (addr, int(port))
+                    manager.mark_connected(addr, port)
+                    logger.debug(f'连接服务器成功: {addr}:{port}')
+                    return True
+            except Exception as exc:  # noqa
+                logger.warning(f'连接服务器失败 {addr}:{port} - {exc}')
+                self.client.disconnect()
+
+        logger.error('所有服务器连接失败.')
+        return False
+
     def reconnect(self):
         if self.closed:
             logger.debug('服务器连接已断开，正进行重新连接...')
-            self.client.connect(*self.bestip)
+            target = self.manager.current_server() if getattr(self, 'manager', None) else None
+
+            if target:
+                self.client.connect(*target)
 
     def close(self):
         logger.debug('close')
@@ -132,30 +221,25 @@ class StdQuotes(BaseQuotes):
     股票市场实时行情"""
 
     def __init__(self, server=None, bestip=False, timeout=15, heartbeat=False, auto_retry=True, raise_exception=False,
-                 **kwargs):
+                 auto_switch=3, **kwargs):
         """构造函数
 
         :param bestip:  最佳 IP
         :param timeout: 超时时间
+        :param auto_switch: 运行期请求失败自动切换服务器, 连续失败多少次后切换, 传 0/False 关闭; 启动期多服务器 failover 始终开启
         :param kwargs:  可变参数
         """
 
         super().__init__(bestip=bestip, timeout=timeout, server=server, **kwargs)
+        bestip and config.setup()
         self.server and config.set('BESTIP', {'HQ': self.server})
 
-        try:
-            config.get('SERVER').get('HQ')[0]
-        except ValueError as ex:
-            logger.warning(ex)
-        finally:
-            default = config.get('SERVER').get('HQ')[0][1:]
-            self.server = config.get('BESTIP').get('HQ', default)
-
-        logger.debug(f'server: {self.server}')
-        ip, port = self.server
-
         self.client = TdxHq_API(heartbeat=heartbeat, auto_retry=auto_retry, raise_exception=raise_exception)
-        self.client.connect(ip, int(port), time_out=timeout)
+        self.manager = ServerManager('HQ', candidates=[self.server] if self.server else None, threshold=auto_switch)
+        self._connect()
+
+        if auto_switch:
+            self.client = AutoSwitchClient(self.client, self.manager, timeout=self.timeout)
 
         global instance
         instance = self
@@ -505,36 +589,31 @@ class ExtQuotes(BaseQuotes):
 
     # server = ("112.74.214.43", 7727)
 
-    def __init__(self, server: list = None, bestip=False, timeout=15, **kwargs):
+    def __init__(self, server: list = None, bestip=False, timeout=15, auto_switch=3, **kwargs):
         """
         构造函数
 
         :param bestip:  最优服务器IP
         :param timeout: 超时时间
+        :param auto_switch: 运行期请求失败自动切换服务器, 连续失败多少次后切换, 传 0/False 关闭; 启动期多服务器 failover 始终开启
         :param kwargs:  可变参数
         """
         super().__init__(bestip=bestip, timeout=timeout, server=server, **kwargs)
+        bestip and config.setup()
         self.server and config.set('BESTIP', {'EX': self.server})
 
         logger.warning('目前扩展市场行情接口已经失效, 后期有望修复.')
-
-        try:
-            config.get('SERVER').get('EX')[0]
-        except ValueError as ex:
-            logger.warning(ex)
-        finally:
-            default = config.get('SERVER').get('EX')[0]
-            self.server = config.get('BESTIP').get('EX', default)
 
         for x in ['verbose', 'server', 'quiet']:
             if x in kwargs.keys():
                 del kwargs[x]
 
-        try:
-            self.client = TdxExHq_API(raise_exception=False, auto_retry=True, **kwargs)
-            self.client.connect(*self.server)
-        except Exception:  # noqa
-            logger.error('服务器连接超时.')
+        self.client = TdxExHq_API(raise_exception=False, auto_retry=True, **kwargs)
+        self.manager = ServerManager('EX', candidates=[self.server] if self.server else None, threshold=auto_switch)
+        self._connect()
+
+        if auto_switch:
+            self.client = AutoSwitchClient(self.client, self.manager, timeout=self.timeout)
 
         global instance
         instance = self

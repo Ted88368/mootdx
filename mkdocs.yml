@@ -27,3 +27,6 @@ nav:
 
   - 常见问题:
     - "py_mini_racer 在 Mac ARM系统问题": faq/py_mini_racer.md
+
+  - 设计参考:
+    - 多服务器测速与自动切换: design/server_failover.md
