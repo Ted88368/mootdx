@@ -41,7 +41,7 @@ def _reversion(bfq_data, xdxr_data, type_):
     if len(info) > 0:
         # 有除权数据
         data = pd.concat([bfq_data, info.loc[bfq_data.index[0]: bfq_data.index[-1], ['category']]], axis=1)
-        data['if_trade'].fillna(value=0, inplace=True)
+        data['if_trade'] = data['if_trade'].fillna(value=0)
 
         data = data.ffill()
         data = pd.concat(
