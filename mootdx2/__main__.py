@@ -56,7 +56,7 @@ def quotes(symbol, action, market, output):
 
 @entry.command(help='读取股票本地行情数据.')
 @click.help_option('-h', '--help')
-@click.option('-d', '--tdxdir', default='C:/new_tdx', help='通达信数据目录.')
+@click.option('-d', '--tdxdir', default=None, help='通达信数据目录, 默认按平台: Windows C:/new_tdx, macOS ~/Library/Application Support/new_tdx, Linux ~/.local/share/new_tdx.')
 @click.option('-s', '--symbol', default='600000', help='股票代码.')
 @click.option('-a', '--action', default='daily', help='操作类型 (daily: 日线, minute: 一分钟线, fzline: 五分钟线).')
 @click.option('-m', '--market', default='std', help='证券市场, 默认 std (std: 标准股票市场, ext: 扩展市场).')

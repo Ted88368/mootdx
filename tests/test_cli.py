@@ -89,7 +89,7 @@ class TestReaderCommand:
         mock_reader_class, mock_client = mock_reader
         result = cli_runner.invoke(entry, ['reader'])
         assert result.exit_code == 0
-        mock_reader_class.factory.assert_called_once_with(market='std', tdxdir='C:/new_tdx')
+        mock_reader_class.factory.assert_called_once_with(market='std', tdxdir=None)
         mock_client.daily.assert_called_once_with(symbol='600000')
 
     def test_custom_options(self, cli_runner, mock_reader):

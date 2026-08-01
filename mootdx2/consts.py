@@ -1,3 +1,23 @@
+import sys
+from pathlib import Path
+
+
+def _default_tdxdir():
+    """按平台惯例返回通达信数据目录默认路径。
+
+    通达信是 Windows 软件, macOS/Linux 无官方版本。Windows 用通达信真实默认路径;
+    macOS/Linux 按 XDG/平台惯例给默认, 用户可把 Wine 装的通达信数据链接过去。
+    """
+    if sys.platform == 'win32':
+        return 'C:/new_tdx'
+    if sys.platform == 'darwin':
+        return str(Path.home() / 'Library' / 'Application Support' / 'new_tdx')
+    return str(Path.home() / '.local' / 'share' / 'new_tdx')
+
+
+DEFAULT_TDXDIR = _default_tdxdir()
+
+
 # 市场
 MARKET_SZ = 0  # 深市
 MARKET_SH = 1  # 沪市
@@ -109,7 +129,7 @@ GP_HOSTS = [
 CONFIG = {
     'SERVER': {'HQ': HQ_HOSTS, 'EX': EX_HOSTS, 'GP': GP_HOSTS},
     'BESTIP': {'HQ': '', 'EX': '', 'GP': ''},
-    'TDXDIR': 'C:/new_tdx',
+    'TDXDIR': DEFAULT_TDXDIR,
 }
 
 

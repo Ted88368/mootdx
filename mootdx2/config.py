@@ -2,6 +2,7 @@ import copy
 import json
 from pathlib import Path
 
+from mootdx2.consts import DEFAULT_TDXDIR
 from mootdx2.consts import EX_HOSTS
 from mootdx2.consts import GP_HOSTS
 from mootdx2.consts import HQ_HOSTS
@@ -14,7 +15,7 @@ __all__ = ['set', 'get', 'copy', 'update', 'settings']
 settings = {
     'SERVER': {'HQ': HQ_HOSTS, 'EX': EX_HOSTS, 'GP': GP_HOSTS},
     'BESTIP': {'HQ': '', 'EX': '', 'GP': ''},
-    'TDXDIR': 'C:/new_tdx',
+    'TDXDIR': DEFAULT_TDXDIR,
 }
 
 BASE = Path(__file__).parent.parent

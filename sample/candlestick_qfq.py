@@ -6,15 +6,20 @@
     python sample/candlestick_qfq.py 515880
     python sample/candlestick_qfq.py 515880 -n 120   # 绘制最近 120 根 K 线
     python sample/candlestick_qfq.py 600036 -n 90     # 也支持普通股票
+
+离线模式 (从本地通达信数据目录读取，需先有 ~/.mootdx2/xdxr/{symbol}.plk 缓存或首次联网拉取):
+    python sample/candlestick_qfq.py 600036 --offline --tdxdir /path/to/tdx
+    python sample/candlestick_qfq.py 600036 --offline --tdxdir tests/fixtures
 """
 
-import sys
+import argparse
 
 import matplotlib.pyplot as plt
 import mplfinance as mpf
 import pandas as pd
 
 from mootdx2.quotes import Quotes
+from mootdx2.reader import Reader
 from mootdx2.tools.reversion import reversion
 
 # 设置中文字体，避免乱码
@@ -29,8 +34,8 @@ plt.rcParams['font.sans-serif'] = [
 plt.rcParams['axes.unicode_minus'] = False
 
 
-def fetch_qfq_data(symbol: str, offset: int = 800) -> pd.DataFrame:
-    """获取前复权 K 线数据。
+def fetch_qfq_online(symbol: str, offset: int = 800) -> pd.DataFrame:
+    """在线获取前复权 K 线数据。
 
     Args:
         symbol: 股票/ETF 代码，如 '515880'、'600036'
@@ -40,20 +45,51 @@ def fetch_qfq_data(symbol: str, offset: int = 800) -> pd.DataFrame:
         前复权 OHLCV DataFrame，索引为日期
     """
     client = Quotes.factory(market='std', quiet=True)
-
-    # 1. 获取不复权 K 线数据
     raw = client.bars(symbol=symbol, frequency=9, start=0, offset=offset)
-
-    # 2. 获取除权除息 (XDXR) 数据
     xdxr_data = client.xdxr(symbol=symbol)
+    return _reversion_and_normalize(symbol, raw, xdxr_data)
 
-    # 3. reversion 要求 DataFrame 中有 'code' 列
+
+def fetch_qfq_offline(symbol: str, tdxdir: str) -> pd.DataFrame:
+    """离线获取前复权 K 线数据（从本地通达信数据目录读取）。
+
+    XDXR 数据走 ``~/.mootdx2/xdxr/{symbol}.plk`` 24h 缓存：命中即纯离线读取，
+    未命中则联网拉取并写回缓存。日线数据从 ``tdxdir/vipdoc/{sh,sz}/lday/*.day``
+    读取。
+
+    Args:
+        symbol: 股票/ETF 代码，如 '600036'
+        tdxdir: 通达信安装目录
+
+    Returns:
+        前复权 OHLCV DataFrame，索引为日期
+    """
+    reader = Reader.factory(market='std', tdxdir=tdxdir)
+    raw = reader.daily(symbol=symbol)
+    if raw is None or raw.empty:
+        raise FileNotFoundError(f'在 {reader.tdxdir} 下未找到 {symbol} 的本地日线数据，请确认通达信目录与代码')
+    xdxr_data = reader.xdxr(symbol=symbol)
+    return _reversion_and_normalize(symbol, raw, xdxr_data)
+
+
+def _reversion_and_normalize(symbol: str, raw: pd.DataFrame, xdxr_data: pd.DataFrame) -> pd.DataFrame:
+    """对不复权 OHLCV 数据应用前复权并清理。
+
+    Args:
+        symbol: 股票/ETF 代码
+        raw: 不复权 OHLCV DataFrame（在线 bars 或离线 daily 返回）
+        xdxr_data: 除权除息 DataFrame（在线 xdxr 或离线缓存返回）
+
+    Returns:
+        前复权 OHLCV DataFrame，索引为日期
+    """
+    # reversion 要求 DataFrame 中有 'code' 列
     raw['code'] = symbol
 
-    # 4. 前复权：type='01' 或 'qfq'
+    # 前复权：type='01' 或 'qfq'
     qfq = reversion(symbol=symbol, stock_data=raw, xdxr=xdxr_data, type_='qfq')
 
-    # 5. 构建日期索引，清理脏数据
+    # 构建日期索引，清理脏数据
     qfq.index = pd.to_datetime(qfq.index, utc=False)
     qfq = qfq.sort_index()
 
@@ -124,22 +160,23 @@ def plot_candlestick(df: pd.DataFrame, symbol: str, n_bars: int = 120):
 
 
 def main():
-    symbol = sys.argv[1] if len(sys.argv) > 1 else '515880'
-    n_bars = 120
+    parser = argparse.ArgumentParser(description='使用 mootdx2 获取前复权 K 线数据并绘制蜡烛图')
+    parser.add_argument('symbol', nargs='?', default='515880', help='股票/ETF 代码 (默认: 515880)')
+    parser.add_argument('-n', '--n-bars', type=int, default=120, help='绘制最近 N 根 K 线 (默认: 120)')
+    parser.add_argument('--offline', action='store_true', help='使用本地通达信数据 (未指定 --tdxdir 时按平台默认)')
+    parser.add_argument('--tdxdir', default=None, help='通达信安装目录, 默认按平台: Windows C:/new_tdx, macOS ~/Library/Application Support/new_tdx, Linux ~/.local/share/new_tdx')
+    args = parser.parse_args()
 
-    # 解析 -n 参数
-    args = sys.argv[1:]
-    if '-n' in args:
-        idx = args.index('-n')
-        n_bars = int(args[idx + 1])
-        # 当 -n 出现时，第一个参数仍然应是 stock code
-        if not args[0].startswith('-'):
-            symbol = args[0]
-    elif len(sys.argv) > 2:
-        n_bars = int(sys.argv[2])
+    symbol = args.symbol
+    n_bars = args.n_bars
 
-    print(f'正在获取 {symbol} 的前复权 K 线数据...')
-    df = fetch_qfq_data(symbol, offset=800)
+    if args.offline:
+        tdxdir_desc = args.tdxdir if args.tdxdir else '(平台默认)'
+        print(f'正在从本地通达信目录 {tdxdir_desc} 读取 {symbol} 的前复权 K 线数据...')
+        df = fetch_qfq_offline(symbol, tdxdir=args.tdxdir)
+    else:
+        print(f'正在在线获取 {symbol} 的前复权 K 线数据...')
+        df = fetch_qfq_online(symbol, offset=800)
 
     print(f'获取到 {len(df)} 条数据')
     print(f'日期范围: {df.index[0].strftime("%Y-%m-%d")} ~ {df.index[-1].strftime("%Y-%m-%d")}')

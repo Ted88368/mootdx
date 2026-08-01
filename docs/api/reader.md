@@ -11,11 +11,43 @@
 
 该目录下每个股票为一个文件，如 `sz000001.day` 为深圳的日k行情，
 
+### 离线模式 vs 在线模式
+
+mootdx2 提供两条数据通路，返回 schema 一致，可按场景选用：
+
+| | 在线模式 (`Quotes`) | 离线模式 (`Reader`) |
+|---|---|---|
+| **日线数据** | `Quotes.bars()` 走 TDX 行情服务器 (7709 端口) 拉取 | `Reader.daily()` 读本地 `tdxdir/vipdoc/{sh,sz}/lday/*.day` 文件 |
+| **XDXR 数据** | `Quotes.xdxr()` 走 TDX 服务器拉取 | `Reader.xdxr()` 读 `~/.mootdx2/xdxr/{symbol}.plk` 24h 缓存，未命中则联网拉取并写回 |
+| **网络依赖** | 每次都要联网 | 日线纯本地；XDXR 首次/过期需联网一次 |
+| **数据时效** | 最新（实时/最新收盘） | 取决于本地通达信客户端上次下载到什么时候 |
+| **条数控制** | `offset` 服务器端分页 | 读整个 `.day` 文件，调用方自行截取 |
+| **前置条件** | 能连上 TDX 服务器 | 本地有通达信数据目录（`tdxdir` 或平台默认） |
+
+> **离线模式的 XDXR 不是纯离线**：本地 `gbbq` 文件加密无法解析，`Reader.xdxr()` 复用在线 `get_xdxr()` 的 24h pickle 缓存。要完全断网运行，需之前在同一台机器上跑过一次（或手动放过 `.plk` 缓存）。
+
+```python
+# 在线模式
+from mootdx2.quotes import Quotes
+client = Quotes.factory(market='std', quiet=True)
+raw = client.bars(symbol='600036', frequency=9, start=0, offset=800)
+xdxr = client.xdxr(symbol='600036')
+
+# 离线模式
+from mootdx2.reader import Reader
+reader = Reader.factory(market='std', tdxdir='C:/new_tdx')  # tdxdir 可省略, 走平台默认
+raw = reader.daily(symbol='600036')
+xdxr = reader.xdxr(symbol='600036')
+```
+
+两条路后面都可走 `reversion(symbol, stock_data=raw, xdxr=xdxr, type_='qfq')` 做前复权，输出一致。
+
 ### 01. 读取行情接口
 
 ```python
 from mootdx2.reader import Reader
 
+# tdxdir 默认按平台: Windows C:/new_tdx, macOS ~/Library/Application Support/new_tdx, Linux ~/.local/share/new_tdx
 reader = Reader.factory(market='std', tdxdir='C:/new_tdx')
 
 # 读取日线数据
@@ -26,7 +58,36 @@ reader.minute(symbol='600036')
 
 # 读取5分钟数据
 reader.fzline(symbol='600036')
+
+# 读取除权除息 (XDXR) 数据
+reader.xdxr(symbol='600036')
 ```
+
+#### reader.xdxr(symbol)
+
+读取除权除息（XDXR）信息，返回 schema 与在线接口 `Quotes.xdxr()` 一致，可直接喂给 `reversion()` 做前复权/后复权。
+
+本地 `gbbq` 文件为加密格式（密钥硬编码在 `tdxw.exe` 内，无法直接解析），因此 `reader.xdxr()` 复用 `~/.mootdx2/xdxr/{symbol}.plk` 的 24h pickle 缓存：
+
+- **缓存命中**（24h 内跑过）：纯离线，零网络
+- **缓存未命中/过期**：联网拉取一次并写回缓存
+
+返回 DataFrame 列含 `year/month/day/category/name/fenhong/peigujia/songzhuangu/peigu/suogu/.../code`，索引为 `date` (DatetimeIndex)。
+
+配合 `daily()` + `reversion()` 画前复权 K 线：
+
+```python
+from mootdx2.reader import Reader
+from mootdx2.tools.reversion import reversion
+
+reader = Reader.factory(market='std', tdxdir='C:/new_tdx')
+raw = reader.daily(symbol='600036')
+xdxr = reader.xdxr(symbol='600036')
+raw['code'] = '600036'
+qfq = reversion(symbol='600036', stock_data=raw, xdxr=xdxr, type_='qfq')
+```
+
+> 也可以直接 `reader.daily(symbol='600036', adjust='qfq')`，内部自动走 `to_data` → `to_adjust` → `reversion` → `get_xdxr`（同样走 24h 缓存）。
 
 ## 02. 读取扩展行情
 

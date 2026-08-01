@@ -5,6 +5,7 @@ from tdxpy.reader import TdxExHqDailyBarReader
 from tdxpy.reader import TdxLCMinBarReader
 from tdxpy.reader import TdxMinBarReader
 
+from mootdx2.consts import DEFAULT_TDXDIR
 from mootdx2.contrib.compat import MooTdxDailyBarReader
 from mootdx2.utils import get_stock_market
 from mootdx2.utils import to_data
@@ -28,18 +29,21 @@ class Reader(object):
 
 
 class ReaderBase(ABC):
-    # 默认通达信安装目录
-    tdxdir = 'C:/new_tdx'
+    # 默认通达信安装目录 (按平台惯例: Windows C:/new_tdx, macOS ~/Library/Application Support/new_tdx, Linux ~/.local/share/new_tdx)
+    tdxdir = DEFAULT_TDXDIR
 
     def __init__(self, tdxdir=None):
         """
         构造函数
 
-        :param tdxdir: 通达信安装目录
+        :param tdxdir: 通达信安装目录, 默认按平台惯例 (见 DEFAULT_TDXDIR)
         """
 
+        if tdxdir is None:
+            tdxdir = DEFAULT_TDXDIR
+
         if not Path(tdxdir).is_dir():
-            raise Exception('tdxdir 目录不存在')
+            raise Exception(f'tdxdir 目录不存在: {tdxdir}')
 
         self.tdxdir = tdxdir
 
@@ -129,6 +133,24 @@ class StdReader(ReaderBase):
         :return: pd.dataFrame or Bool
         """
         return self.minute(symbol, suffix=5)
+
+    def xdxr(self, symbol='', **kwargs):
+        """
+        读取除权除息信息（本地缓存优先，在线回退）
+
+        本地 gbbq 文件为加密格式（密钥硬编码在 tdxw.exe 内，公开 Python 解密实现不存在），
+        因此复用 ``mootdx2.utils.adjust.get_xdxr()`` 的 24h pickle 缓存
+        (``~/.mootdx2/xdxr/{symbol}.plk``)。缓存命中即纯离线读取；未命中或过期则
+        联网拉取并写回缓存。返回 schema 与 ``StdQuotes.xdxr()`` 一致。
+
+        :param symbol: 证券代码
+        :return: pd.DataFrame, 列含 year/month/day/category/name/fenhong/peigujia/
+                 songzhuangu/peigu/suogu/.../code，索引为 date (DatetimeIndex)
+        """
+        from mootdx2.utils.adjust import get_xdxr
+
+        symbol = Path(symbol).stem if symbol else ''
+        return get_xdxr(symbol)
 
     def block_new(self, name: str = None, symbol: list = None, group=False, **kwargs):
         """

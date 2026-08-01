@@ -53,7 +53,8 @@ uv run pytest
 from mootdx2.reader import Reader
 
 # market 参数 std 为标准市场(就是股票), ext 为扩展市场(期货，黄金等)
-# tdxdir 是通达信的数据目录, 根据自己的情况修改
+# tdxdir 是通达信的数据目录, 默认按平台: Windows C:/new_tdx, macOS ~/Library/Application Support/new_tdx, Linux ~/.local/share/new_tdx
+# 不传 tdxdir 时走平台默认, 也可按需指定
 
 reader = Reader.factory(market='std', tdxdir='C:/new_tdx')
 
@@ -65,6 +66,9 @@ reader.minute(symbol='600036')
 
 # 读取时间线数据
 reader.fzline(symbol='600036')
+
+# 读取除权除息数据 (XDXR, 走 24h 缓存, 首次需联网)
+reader.xdxr(symbol='600036')
 ```
 
 通达信线上行情读取
