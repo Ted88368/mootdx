@@ -12,7 +12,7 @@ Usage: mootdx2 reader [OPTIONS]
   读取股票本地行情数据.
 
 Options:
-  -d, --tdxdir TEXT  通达信数据目录, 默认按平台: Windows C:/new_tdx, macOS ~/Library/Application Support/new_tdx, Linux ~/.local/share/new_tdx.
+  -d, --tdxdir TEXT  通达信数据目录, 默认按平台: Windows C:/new_tdx, macOS ~/new_tdx, Linux ~/.local/share/new_tdx.
   -s, --symbol TEXT  股票代码.
   -a, --action TEXT  操作类型 (daily:日线, minute:一分钟线, fzline:五分钟线).
   -m, --market TEXT  证券市场, 默认 std (std: 标准股票市场, ext: 扩展市场).

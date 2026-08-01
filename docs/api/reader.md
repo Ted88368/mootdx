@@ -47,7 +47,7 @@ xdxr = reader.xdxr(symbol='600036')
 ```python
 from mootdx2.reader import Reader
 
-# tdxdir 默认按平台: Windows C:/new_tdx, macOS ~/Library/Application Support/new_tdx, Linux ~/.local/share/new_tdx
+# tdxdir 默认按平台: Windows C:/new_tdx, macOS ~/new_tdx, Linux ~/.local/share/new_tdx
 reader = Reader.factory(market='std', tdxdir='C:/new_tdx')
 
 # 读取日线数据

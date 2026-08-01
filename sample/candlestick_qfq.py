@@ -8,7 +8,7 @@
     python sample/candlestick_qfq.py 600036 -n 90     # 也支持普通股票
 
 离线模式 (从本地通达信数据目录读取，需先有 ~/.mootdx2/xdxr/{symbol}.plk 缓存或首次联网拉取):
-    python sample/candlestick_qfq.py 600036 --offline --tdxdir /path/to/tdx
+    python sample/candlestick_qfq.py 515880 --offline --tdxdir /path/to/tdx
     python sample/candlestick_qfq.py 600036 --offline --tdxdir tests/fixtures
 """
 
@@ -164,7 +164,7 @@ def main():
     parser.add_argument('symbol', nargs='?', default='515880', help='股票/ETF 代码 (默认: 515880)')
     parser.add_argument('-n', '--n-bars', type=int, default=120, help='绘制最近 N 根 K 线 (默认: 120)')
     parser.add_argument('--offline', action='store_true', help='使用本地通达信数据 (未指定 --tdxdir 时按平台默认)')
-    parser.add_argument('--tdxdir', default=None, help='通达信安装目录, 默认按平台: Windows C:/new_tdx, macOS ~/Library/Application Support/new_tdx, Linux ~/.local/share/new_tdx')
+    parser.add_argument('--tdxdir', default=None, help='通达信安装目录, 默认按平台: Windows C:/new_tdx, macOS ~/new_tdx, Linux ~/.local/share/new_tdx')
     args = parser.parse_args()
 
     symbol = args.symbol

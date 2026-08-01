@@ -68,7 +68,7 @@ def fetch_qfq_offline(reader: Reader, symbol: str) -> pd.DataFrame:
 def main():
     parser = argparse.ArgumentParser(description='离线批量下载 ETF 前复权日线数据')
     parser.add_argument('-c', '--config', default='config_etf.yaml', help='ETF 代码 yaml 配置 (默认: config_etf.yaml)')
-    parser.add_argument('-d', '--tdxdir', default=None, help='通达信数据目录, 默认按平台: Windows C:/new_tdx, macOS ~/Library/Application Support/new_tdx, Linux ~/.local/share/new_tdx')
+    parser.add_argument('-d', '--tdxdir', default=None, help='通达信数据目录, 默认按平台: Windows C:/new_tdx, macOS ~/new_tdx, Linux ~/.local/share/new_tdx')
     parser.add_argument('-o', '--output', default='output/etf_qfq', help='CSV 输出目录 (默认: output/etf_qfq)')
     parser.add_argument('-l', '--limit', type=int, default=None, help='只处理前 N 个 ETF (调试用)')
     args = parser.parse_args()

@@ -29,7 +29,7 @@ class Reader(object):
 
 
 class ReaderBase(ABC):
-    # 默认通达信安装目录 (按平台惯例: Windows C:/new_tdx, macOS ~/Library/Application Support/new_tdx, Linux ~/.local/share/new_tdx)
+    # 默认通达信安装目录 (按平台惯例: Windows C:/new_tdx, macOS ~/new_tdx, Linux ~/.local/share/new_tdx)
     tdxdir = DEFAULT_TDXDIR
 
     def __init__(self, tdxdir=None):
